@@ -55,37 +55,40 @@ mul (S m) n = add n (mul m n)
 -- Conversion
 -- Negative inputs map to Z
 integerToNat :: Integer -> Nat
-integerToNat = todo
+integerToNat i | i <= 0    = Z
+               | otherwise = S (integerToNat (i - 1))
 
 -- Conversion
 natToInteger :: Nat -> Integer
-natToInteger = todo
+natToInteger Z     = 0
+natToInteger (S n) = 1 + natToInteger n  
 
 -- Num instance allows to use common arithmetic operations when writing expressions of type Nat.
 instance Num Nat where
   (+) :: Nat -> Nat -> Nat
-  (+) = todo
+  l + r = add l r
 
   (*) :: Nat -> Nat -> Nat
-  (*) = todo
+  l * r = mul l r
 
   (-) :: Nat -> Nat -> Nat
-  (-) = todo
+  l - r = sub l r
 
   -- Returns the argument unchanged
   negate :: Nat -> Nat
-  negate = todo
+  negate n = n
 
   -- Returns the argument unchanged
   abs :: Nat -> Nat
-  abs = todo
+  abs n = n
 
   -- Returns Z if arg is zero and one (S Z) if argument is positive.
   signum :: Nat -> Nat
-  signum = todo
+  signum Z = Z
+  signum (S _) = (S Z)
 
   fromInteger :: Integer -> Nat
-  fromInteger = todo
+  fromInteger i = integerToNat i
 
 
 main :: IO ()
