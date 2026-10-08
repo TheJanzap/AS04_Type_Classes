@@ -1,7 +1,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 module Main (main) where
-import Test.Hspec ( hspec, describe, it, shouldBe, shouldSatisfy, Spec )
+import Test.Hspec ( hspec, describe, it, shouldBe, shouldSatisfy, shouldThrow, errorCall, Spec )
+import Control.Exception (evaluate)
 import Lang.Imp
 import qualified Map.TreeMap as M
 
@@ -10,6 +11,29 @@ evalSpec =
   describe "eval" $ do 
     it "eval (AConst 1) empty == 1" $
       eval (AConst 1) emptyState `shouldBe` (1 :: Integer)
+
+    it "eval (BNot (AConst 5 `REq` AConst 5)) == False" $
+      eval (BNot (AConst 5 `REq` AConst 5)) emptyState `shouldBe` False
+    it "eval (BAnd (AConst 5 `REq` AConst 5) (AConst 1 `RLt` AConst 5)) emptyState == True" $
+      eval (BAnd (AConst 5 `REq` AConst 5) (AConst 1 `RLt` AConst 5)) emptyState `shouldBe` True
+    it "eval (BOr (AConst 5 `REq` AConst 0) (AConst 1 `RLt` AConst 5)) emptyState == True" $
+      eval (BOr (AConst 5 `REq` AConst 0) (AConst 1 `RLt` AConst 5)) emptyState `shouldBe` True
+
+    it "eval (REq (AConst 10) (AConst 10)) == True" $
+      eval (REq (AConst 10) (AConst 10)) emptyState `shouldBe` True
+    it "eval (REq (AConst 10) (AConst 8)) == False" $
+      eval (REq (AConst 10) (AConst 8)) emptyState `shouldBe` False
+    it "eval (RLt (AConst 3) (AConst 5)) == True" $
+      eval (RLt (AConst 3) (AConst 5)) emptyState `shouldBe` True
+    it "eval (RLt (AConst 5) (AConst 5)) == False" $
+      eval (RLt (AConst 5) (AConst 5)) emptyState `shouldBe` False
+
+    it "Variable lookup" $
+      eval (AVar "myInt") (M.fromList [("myInt", 42)]) `shouldBe` 42
+    it "Variable lookup throws when a variable is not found" $
+      evaluate (eval (AVar "x") emptyState) `shouldThrow` errorCall "Variable not found"
+    it "Uses variables in expressions" $
+      eval (APlus (AVar "a") (AVar "b")) (M.fromList [("a", 2), ("b", 3)]) `shouldBe` 5
 
 execSpec :: Spec
 execSpec = 
