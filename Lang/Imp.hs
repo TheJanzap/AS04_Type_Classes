@@ -50,8 +50,8 @@ data Cmd =
 -- Computes the result from an expression and state
 eval :: Expr a -> State -> a
 eval (BNot b) st      = not (eval b st)
-eval (BAnd l r) st    = and [(eval l st), (eval r st)]
-eval (BOr l r) st     = or [(eval l st), (eval r st)]
+eval (BAnd l r) st    = (eval l st) && (eval r st)
+eval (BOr l r) st     = (eval l st) || (eval r st)
 eval (REq l r) st     = (eval l st) == (eval r st)
 eval (RLt l r) st     = (eval l st) < (eval r st)
 eval (AConst x) _     = x
@@ -60,7 +60,7 @@ eval (APlus l r) st   = (eval l st) + (eval r st)
 eval (AMinus l r) st  = (eval l st) - (eval r st)
 eval (AMul l r) st    = (eval l st) * (eval r st)
 eval (ADiv l r) st    = (eval l st) `div` (eval r st)
-eval (AMod l r) st    = mod (eval l st) (eval r st)
+eval (AMod l r) st    = (eval l st) `mod` (eval r st)
 
 exec :: Cmd -> State -> State
 exec CSkip st                 = st
