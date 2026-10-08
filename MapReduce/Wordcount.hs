@@ -14,7 +14,7 @@ type WordCount = Map String (Sum Int)
 lower :: String -> String
 lower = map toLower
 
--- Replaces punctuation with which spaces.
+-- Replaces punctuation with white spaces.
 clear :: String -> String
 clear = map remove 
   where remove c | c `elem` ".,'\"!?" = ' '
@@ -26,12 +26,15 @@ cleanWords = words . clear . lower
 
 -- Takes an input text, cleans it, constructs a list of pairs ("WORD", 1), 
 -- and builds the Map based on these.
+-- The map creates a new tuple for every word, e.g. [("hello",1), ("world",1), ("hello",1)]
+-- fromListMerge then merges the keys and uses the Sum monoid to add the values together: Sum 1 <> Sum 1 = Sum 2
 wordCount:: String -> WordCount
 wordCount = fromListMerge . map (\w -> (w,1)) . cleanWords
 
 -- Takes the mapping function and uses the monoid instance of m to reduce the values.
-mapReduce ::  Monoid m => (a -> m) -> [a] -> m
-mapReduce f = error "TODO" 
+-- In our case, folding all WordCounts from the different files (List of String) into one.
+mapReduce :: Monoid m => (a -> m) -> [a] -> m
+mapReduce f xs = foldMap f xs
 
 -- Main program, loads text files and calculates the word count on them.
 main :: IO ()
@@ -40,6 +43,7 @@ main = do
   files <- filterM doesFileExist elements
   let txtFiles = filter (endsWith ".txt") files
   contents <- mapM readFile txtFiles
+  -- Since we have a list of Strings from multiple files, we need to combine all WordCounts into one
   let result = mapReduce wordCount contents
   putStrLn (showResults result)
 
